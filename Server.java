@@ -14,6 +14,7 @@ public class Server {
     public static ArrayList<String> messagesOfTheDay;
 
     public static int messageIndex = 0;
+    public static boolean isLoggedIn = false;
 
     public static void main(String args[])
     {
@@ -22,7 +23,8 @@ public class Server {
         BufferedReader is;
         PrintStream os;
         Socket serviceSocket = null;
-
+        String username = "";
+        String password = "";
         userCred = new HashMap<>();
         // Initialize the userCred with user IDs and passwords
         userCred.put("root", "root01");
@@ -59,10 +61,11 @@ public class Server {
                     } else if (line.startsWith("LOGIN")) {
                         String[] loginInfo = line.split(" ");
                         if (loginInfo.length == 3) {
-                            String username = loginInfo[1];
-                            String password = loginInfo[2];
+                            username = loginInfo[1];
+                            password = loginInfo[2];
                             if (authenticateUser(username, password)) {
                                 os.println("200 OK. Login successful.");
+                                isLoggedIn = true;
                             } else {
                                 os.println("410 Wrong UserID or Password.");
                             }
@@ -77,8 +80,7 @@ public class Server {
                             messageIndex = (messageIndex + 1) % messagesOfTheDay.size();
                         }
                     } else if (line.startsWith("MSGSTORE")) {
-                        boolean isLoggedIn=true;
-                        if (isLoggedIn) {
+                        if (isLoggedIn)  {
                             // Read and store the new message
                             os.println("200 OK");
                             String newMessage = is.readLine();
@@ -87,6 +89,23 @@ public class Server {
                         } else {
                             os.println("401 You are not currently logged in, login first.");
                         }
+                    } else if (line.startsWith("LOGOUT")) {
+                        if (isLoggedIn) {
+                            //os.println("200 OK");
+                            isLoggedIn = false;
+                            os.println("200 OK. Successfully Logout.");
+                        }else{
+                            os.println("401 You are not currently logged in, login first.");
+                        }
+                    } else if (line.startsWith("SHUTDOWN")) {
+                        if (isLoggedIn == true && username.equals("root")){
+                            isLoggedIn = false;
+                            os.println("200 OK. Server Shutdown!");
+                            System.exit(1);
+                        }else {
+                            os.println("300 Message Format Error");
+                        }
+
                     } else {
                         System.out.println(line);
                         os.println(line);
@@ -132,3 +151,4 @@ public class Server {
         }
     }
 }
+

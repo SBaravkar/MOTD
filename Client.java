@@ -56,7 +56,7 @@ public class Client
 					os.println(userInput);
 					serverInput = is.readLine();
 					System.out.println("Message:" + serverInput);
-					if("QUIT".equals(userInput)){
+					if("QUIT".equals(userInput) || "SHUTDOWN".equals(userInput)){
 						break;
 					}
 				}
