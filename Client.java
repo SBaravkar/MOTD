@@ -1,5 +1,6 @@
 /*
  * Client.java
+ * This file includes code for transmitting command requests to clients.
  */
 
 import java.io.*;
@@ -56,6 +57,7 @@ public class Client
 					os.println(userInput);
 					serverInput = is.readLine();
 					System.out.println("Message:" + serverInput);
+					//handling quit and shutdown response by the server
 					if("QUIT".equals(userInput) || "SHUTDOWN".equals(userInput)){
 						break;
 					}

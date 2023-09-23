@@ -1,6 +1,9 @@
 /*
  * Server.java
+ * This file contains code to processes commands received from clients.
+ * The server will handle MSGGET, MSGSTORE, LOGIN, LOGOUT, SHUTDOWN and QUIT requests from client.
  */
+
 
 import java.io.*;
 import java.net.*;
@@ -10,10 +13,13 @@ import java.util.HashMap;
 public class Server {
 
     public static final int SERVER_PORT = 1002;
+    // Initialize hashmap to store user credentials.
     public static HashMap<String, String> userCred;
+    // Initialize message list to store messages for MSGGET and MSGSTORE.
     public static ArrayList<String> messagesOfTheDay;
-
+    // Initialize message index for MSGGET.
     public static int messageIndex = 0;
+    // Initialize session flag to track logged In users.
     public static boolean isLoggedIn = false;
 
     public static void main(String[] args)
@@ -23,10 +29,11 @@ public class Server {
         BufferedReader is;
         PrintStream os;
         Socket serviceSocket = null;
+        // Initialize login credentials variables.
         String username = "";
         String password = "";
+        // Store user credentials.
         userCred = new HashMap<>();
-        // Initialize the userCred with user IDs and passwords
         userCred.put("root", "root01");
         userCred.put("john", "john01");
         userCred.put("david", "david01");
@@ -55,54 +62,70 @@ public class Server {
                 // As long as we receive data, echo that data back to the client.
                 while ((line = is.readLine()) != null)
                 {
+                    // The server will confirm and terminate the client upon QUIT request.
                     if ("QUIT".equals(line)) {
                         os.println("200 OK. The Client is QUIT.");
                         break;
-                    } else if (line.startsWith("LOGIN")) {
+                    }
+                    // Server verifies user validity during LOGIN authentication.
+                    else if (line.startsWith("LOGIN")) {
                         String[] loginInfo = line.split(" ");
                         if (loginInfo.length == 3) {
                             username = loginInfo[1];
                             password = loginInfo[2];
                             if (authenticateUser(username, password)) {
+                                // Respond with 200 OK upon the successful login.
                                 os.println("200 OK. Login successful.");
                                 isLoggedIn = true;
                             } else {
+                                // Respond with 410 Wrong upon the invalid credentials.
                                 os.println("410 Wrong UserID or Password.");
                             }
                         } if(loginInfo.length != 3) {
+                            // Respond with 400 Bad Request upon username/password missing.
                             os.println("400 Bad Request. Invalid arguments.");
                         }
-                    } else if (line.startsWith("MSGGET")) {     // The MSGGET instruction is responsible for fetching and forwarding the daily messages of the client.
+                    }
+                    // Server fetches and forwards client's daily messages upon receiving MSGGET.
+                    else if (line.startsWith("MSGGET")) {
 
                         if (messageIndex < messagesOfTheDay.size()) {
                            // Message at the current index is retrieved.
                             String message = messagesOfTheDay.get(messageIndex);
-                            // Send the client a success response (200 OK) and the message retrieved from messagesOfTheDay.
+                            // Respond with 200 OK upon the message retrieved.
                             os.println("200 OK " +message);
-                            messageIndex = (messageIndex + 1) % messagesOfTheDay.size(); // Increment the Index count to print the messages in sequential manner.
+                            // Increment the Index count for sequential message printing.
+                            messageIndex = (messageIndex + 1) % messagesOfTheDay.size();
                         }
-                    } else if (line.startsWith("MSGSTORE")) { // The MSGSTORE command, which enables logged-in users to store a new message.
+                    }
+                    // The MSGSTORE command, which allows logged-in users to store a new message.
+                    else if (line.startsWith("MSGSTORE")) {
                         if (isLoggedIn)  {
                             os.println("200 OK");
                             // Read the new message sent by the user.
                             String newMessage = is.readLine();
                             // Store the new message sent by the user in the text file.
                             storeMessage(newMessage);
-                            // Sent message to client after successfully storing the new message
+                            // Respond with 200 OK after storing the message.
                             os.println("200 OK");
                         } else {
                             os.println("401 You are not currently logged in, login first.");
                         }
-                    } else if (line.startsWith("LOGOUT")) {
+                    }
+                    // The server will log out the client upon receiving LOGOUT from client.
+                    else if (line.startsWith("LOGOUT")) {
                         if (isLoggedIn) {
-                            // Logout the user from the environment and allow other user to login by setting the flag to false.
+                            // Set session flag to false upon LOGOUT.
                             isLoggedIn = false;
                             os.println("200 OK. Successfully Logout.");
                         }else{
                             os.println("401 You are not currently logged in, login first.");
                         }
-                    } else if (line.startsWith("SHUTDOWN")) {
-                        if (isLoggedIn && username.equals("root")){  // check if user is logged in and username is root user.
+                    }
+                    // The server and client will terminate upon receiving SHUTDOWN from client.
+                    else if (line.startsWith("SHUTDOWN")) {
+                        // check if user is logged in and username is root user.
+                        if (isLoggedIn && username.equals("root")){
                             isLoggedIn = false;
                             os.println("200 OK. Server Shutdown!");
                             System.exit(1);
@@ -134,9 +157,12 @@ public class Server {
 
     // Function to read messages from a text file
     private static ArrayList<String> readMessagesFromFile(String fileName) {
-        ArrayList<String> messages = new ArrayList<>(); // ArrayList to store messages.
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) { /// To read the mentioned file, open it as a FileReader and wrap it in a BufferedReader.
-            String line; //store each line read from the file.
+         // ArrayList to store messages.
+        ArrayList<String> messages = new ArrayList<>();
+        // To read file, open it as a FileReader and wrap it in a BufferedReader.
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            //store each line read from the file.
+            String line;
             while ((line = br.readLine()) != null) {
                 messages.add(line);
             }
@@ -148,14 +174,12 @@ public class Server {
     // Function to store a new message in a text file
     private static void storeMessage(String message) {
         try (FileWriter fw = new FileWriter("messages.txt", true);
-             // Open the "messages.txt" file for writing using a FileWriter and the 'true' flag specifies that we want to append to the file if it exists.
              BufferedWriter bw = new BufferedWriter(fw);
              PrintWriter out = new PrintWriter(bw)) {
-            out.println(message); // Write the 'message' string to the file.
+            out.println(message);
 
         } catch (IOException e) {
             System.err.println("Error storing message: " + e.getMessage());
         }
     }
 }
-
