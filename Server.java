@@ -1,6 +1,6 @@
 /*
  * Server.java
- * This file contains code to processes commands received from clients.
+ * This file contains code to process commands received from clients.
  * The server will handle MSGGET, MSGSTORE, LOGIN, LOGOUT, SHUTDOWN and QUIT requests from client.
  */
 
@@ -19,7 +19,7 @@ public class Server {
     public static ArrayList<String> messagesOfTheDay;
     // Initialize message index for MSGGET.
     public static int messageIndex = 0;
-    // Initialize session flag to track logged In users.
+    // Initialize session flag to track logged-In users.
     public static boolean isLoggedIn = false;
 
     public static void main(String[] args)
@@ -87,7 +87,7 @@ public class Server {
                         }
                     }
                     // Server fetches and forwards client's daily messages upon receiving MSGGET.
-                    else if (line.startsWith("MSGGET")) {
+                    else if (line.equals("MSGGET")) {
 
                         if (messageIndex < messagesOfTheDay.size()) {
                            // Message at the current index is retrieved.
@@ -99,7 +99,7 @@ public class Server {
                         }
                     }
                     // The MSGSTORE command, which allows logged-in users to store a new message.
-                    else if (line.startsWith("MSGSTORE")) {
+                    else if (line.equals("MSGSTORE")) {
                         if (isLoggedIn)  {
                             os.println("200 OK");
                             // Read the new message sent by the user.
@@ -113,7 +113,7 @@ public class Server {
                         }
                     }
                     // The server will log out the client upon receiving LOGOUT from client.
-                    else if (line.startsWith("LOGOUT")) {
+                    else if (line.equals("LOGOUT")) {
                         if (isLoggedIn) {
                             // Set session flag to false upon LOGOUT.
                             isLoggedIn = false;
@@ -123,19 +123,20 @@ public class Server {
                         }
                     }
                     // The server and client will terminate upon receiving SHUTDOWN from client.
-                    else if (line.startsWith("SHUTDOWN")) {
+                    else if (line.equals("SHUTDOWN")) {
                         // check if user is logged in and username is root user.
                         if (isLoggedIn && username.equals("root")){
                             isLoggedIn = false;
-                            os.println("200 OK. Server Shutdown!");
+                            os.println("200 OK.");
                             System.exit(1);
+                            os.println(" Server SHUTDOWN!");
                         }else {
-                            os.println("300 Message Format Error");
+                            os.println("402 User not allowed to execute this command.");
                         }
 
                     } else {
                         System.out.println(line);
-                        os.println(line);
+                        os.println("300 Message Format Error");
                     }
                 }
                 //close input and output stream and socket
