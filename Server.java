@@ -22,6 +22,8 @@ public class Server {
     // Initialize session flag to track logged-In users.
     public static boolean isLoggedIn = false;
 
+    public static int loggedInUser = 0;
+
     public static void main(String[] args)
     {
         ServerSocket myServerice = null;
@@ -75,8 +77,14 @@ public class Server {
                             password = loginInfo[2];
                             if (authenticateUser(username, password)) {
                                 // Respond with 200 OK upon the successful login.
-                                os.println("200 OK. Login successful.");
-                                isLoggedIn = true;
+                                if (loggedInUser ==0) {
+                                    os.println("200 OK. Login successful.");
+                                    isLoggedIn = true;
+                                    loggedInUser = 1;
+                                }
+                                else {
+                                    os.println("Logout previous User");
+                                }
                             } else {
                                 // Respond with 410 Wrong upon the invalid credentials.
                                 os.println("410 Wrong UserID or Password.");
@@ -117,6 +125,7 @@ public class Server {
                         if (isLoggedIn) {
                             // Set session flag to false upon LOGOUT.
                             isLoggedIn = false;
+                            loggedInUser = 0;
                             os.println("200 OK. Successfully Logout.");
                         }else{
                             os.println("401 You are not currently logged in, login first.");
@@ -129,9 +138,10 @@ public class Server {
                             isLoggedIn = false;
                             os.println("200 OK.");
                             System.exit(1);
-                            os.println(" Server SHUTDOWN!");
+                            os.println("Server SHUTDOWN");
                         }else {
                             os.println("402 User not allowed to execute this command.");
+                            System.out.println(line);
                         }
 
                     } else {

@@ -10,3 +10,4 @@ Assignment testing phase 5.
 Assignment testing phase 7.
 Going home.
 hello CN
+the instructions about how to run program.

@@ -55,11 +55,21 @@ public class Client
 				while ((userInput = stdInput.readLine())!= null)
 				{
 					os.println(userInput);
+//					System.out.println(userInput);
 					serverInput = is.readLine();
 					System.out.println("Message:" + serverInput);
 					//handling quit and shutdown response by the server
-					if("QUIT".equals(userInput) || "SHUTDOWN".equals(userInput)){
+
+					if("QUIT".equals(userInput)){
 						break;
+					}
+					if("SHUTDOWN".equals(userInput)){
+						if(serverInput.contains("402")) {
+							continue;
+						}
+						else {
+							break;
+						}
 					}
 				}
 
